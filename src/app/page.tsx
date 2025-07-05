@@ -1,103 +1,270 @@
-import Image from "next/image";
+"use client";
+import { useEffect, useState } from "react";
+import { categories, Category } from "@/lib/models";
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
+import { format, parseISO } from "date-fns";
+import { motion } from "framer-motion";
+import { 
+  DollarSign, 
+  TrendingUp, 
+  CreditCard, 
+  AlertCircle,
+  CheckCircle,
+  ArrowUpRight,
+  ArrowDownRight
+} from "lucide-react";
 
-export default function Home() {
+interface Transaction {
+  _id?: string;
+  amount: number;
+  date: string;
+  description: string;
+  category: Category;
+}
+
+const COLORS = ["#d97706", "#059669", "#dc2626", "#7c3aed", "#0891b2", "#be185d", "#ca8a04"];
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 }
+};
+
+function formatINR(amount: number) {
+  return '₹' + amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+export default function DashboardPage() {
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    fetchTransactions();
+  }, []);
+
+  async function fetchTransactions() {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/transactions");
+      if (!res.ok) {
+        throw new Error("Failed to fetch transactions");
+      }
+      const data = await res.json();
+      setTransactions(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setError("Failed to load transactions. Please check your MongoDB connection.");
+      setTransactions([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const total = transactions.reduce((sum, tx) => sum + tx.amount, 0);
+  const byCategory = categories.map(cat => ({
+    category: cat,
+    amount: transactions.filter(tx => tx.category === cat).reduce((sum, tx) => sum + tx.amount, 0),
+  })).filter(c => c.amount > 0);
+  const recent = transactions.slice(0, 5);
+
+  const topCategory = byCategory[0]?.category || "None";
+  const avgTransaction = transactions.length > 0 ? total / transactions.length : 0;
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-8"
+    >
+      {/* Header */}
+      <motion.div variants={itemVariants} className="text-center mb-8">
+        <h1 className="text-4xl font-bold gradient-text mb-2">Financial Dashboard</h1>
+        <p className="text-white/80 text-lg">Track your spending and stay on budget</p>
+      </motion.div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+      {/* Error Message */}
+      {error && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="glass-card p-4 flex items-center space-x-3"
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          <AlertCircle className="h-5 w-5 text-red-400" />
+          <span className="text-red-200">{error}</span>
+        </motion.div>
+      )}
+
+      {/* Summary Cards */}
+      <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          className="glass-card p-6 rounded-2xl hover-lift"
         >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-white/60 text-sm font-medium">Total Expenses</p>
+              <p className="text-3xl font-bold text-white">{formatINR(total)}</p>
+            </div>
+            <div className="p-3 bg-amber-500/20 rounded-full">
+              <DollarSign className="h-6 w-6 text-amber-400" />
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          className="glass-card p-6 rounded-2xl hover-lift"
         >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-white/60 text-sm font-medium">Top Category</p>
+              <p className="text-2xl font-bold text-white">{topCategory}</p>
+            </div>
+            <div className="p-3 bg-emerald-500/20 rounded-full">
+              <TrendingUp className="h-6 w-6 text-emerald-400" />
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          className="glass-card p-6 rounded-2xl hover-lift"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-white/60 text-sm font-medium">Transactions</p>
+              <p className="text-3xl font-bold text-white">{transactions.length}</p>
+            </div>
+            <div className="p-3 bg-violet-500/20 rounded-full">
+              <CreditCard className="h-6 w-6 text-violet-400" />
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          className="glass-card p-6 rounded-2xl hover-lift"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-white/60 text-sm font-medium">Avg Transaction</p>
+              <p className="text-2xl font-bold text-white">{formatINR(avgTransaction)}</p>
+            </div>
+            <div className="p-3 bg-amber-500/20 rounded-full">
+              <ArrowUpRight className="h-6 w-6 text-amber-400" />
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
+
+      {/* Charts and Recent Transactions */}
+      <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Category Breakdown */}
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          className="glass-card p-6 rounded-2xl hover-lift"
+        >
+          <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
+            <TrendingUp className="h-5 w-5 mr-2" />
+            Category Breakdown
+          </h2>
+          {byCategory.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie 
+                  data={byCategory} 
+                  dataKey="amount" 
+                  nameKey="category" 
+                  cx="50%" 
+                  cy="50%" 
+                  outerRadius={100} 
+                  label={({ category, percent = 0 }) => `${category} ${(percent * 100).toFixed(0)}%`}
+                >
+                  {byCategory.map((entry, i) => (
+                    <Cell key={`cell-${i}`} fill={COLORS[i % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'rgba(255,255,255,0.95)',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '8px',
+                    color: '#1e293b',
+                    fontWeight: 500,
+                    fontSize: '1rem',
+                    boxShadow: '0 2px 8px rgba(30,41,59,0.08)'
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="text-center text-white/60 py-8">
+              <CreditCard className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>No data available</p>
+            </div>
+          )}
+        </motion.div>
+
+        {/* Recent Transactions */}
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          className="glass-card p-6 rounded-2xl hover-lift"
+        >
+          <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
+            <CreditCard className="h-5 w-5 mr-2" />
+            Recent Transactions
+          </h2>
+          {loading ? (
+            <div className="text-center text-white/60 py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto"></div>
+              <p className="mt-2">Loading...</p>
+            </div>
+          ) : recent.length > 0 ? (
+            <div className="space-y-3">
+              {recent.map((tx, index) => (
+                <motion.div
+                  key={tx._id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-amber-500/20 rounded-full">
+                      <DollarSign className="h-4 w-4 text-amber-400" />
+                    </div>
+                    <div>
+                      <p className="text-white font-medium">{tx.description}</p>
+                      <p className="text-white/60 text-sm">{format(parseISO(tx.date), "MMM dd, yyyy")}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-white font-semibold">{formatINR(tx.amount)}</p>
+                    <p className="text-white/60 text-sm">{tx.category}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center text-white/60 py-8">
+              <CheckCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>No transactions yet.</p>
+              <p className="text-sm mt-1">Add your first transaction to get started!</p>
+            </div>
+          )}
+        </motion.div>
+      </motion.div>
+    </motion.div>
   );
 }
