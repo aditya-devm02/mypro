@@ -10,8 +10,7 @@ import {
   CreditCard, 
   AlertCircle,
   CheckCircle,
-  ArrowUpRight,
-  ArrowDownRight
+  ArrowUpRight
 } from "lucide-react";
 
 interface Transaction {
@@ -62,7 +61,7 @@ export default function DashboardPage() {
       }
       const data = await res.json();
       setTransactions(Array.isArray(data) ? data : []);
-    } catch (err) {
+    } catch (_err) {
       setError("Failed to load transactions. Please check your MongoDB connection.");
       setTransactions([]);
     } finally {

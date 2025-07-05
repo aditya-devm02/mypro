@@ -7,7 +7,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Plus, 
   Trash2, 
-  DollarSign, 
   Calendar, 
   Tag,
   AlertCircle,
@@ -70,7 +69,7 @@ export default function BudgetsPage() {
       }
       const data = await res.json();
       setBudgets(Array.isArray(data) ? data : []);
-    } catch (err) {
+    } catch (_err) {
       setError("Failed to load budgets. Please check your MongoDB connection.");
       setBudgets([]);
     } finally {
@@ -86,7 +85,7 @@ export default function BudgetsPage() {
       }
       const data = await res.json();
       setTransactions(Array.isArray(data) ? data : []);
-    } catch (err) {
+    } catch (_err) {
       setTransactions([]);
     }
   }
@@ -115,7 +114,7 @@ export default function BudgetsPage() {
       }
       setForm({ category: categories[0], amount: 0, month: form.month });
       fetchBudgets();
-    } catch (err) {
+    } catch (_err) {
       setError("Failed to save budget. Please check your MongoDB connection.");
       setLoading(false);
     }
@@ -133,7 +132,7 @@ export default function BudgetsPage() {
         throw new Error("Failed to delete budget");
       }
       fetchBudgets();
-    } catch (err) {
+    } catch (_err) {
       setError("Failed to delete budget. Please check your MongoDB connection.");
       setLoading(false);
     }
