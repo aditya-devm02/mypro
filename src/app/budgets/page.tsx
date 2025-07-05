@@ -55,11 +55,6 @@ export default function BudgetsPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    fetchBudgets();
-    fetchTransactions();
-  }, []);
-
   const fetchBudgets = useCallback(async () => {
     setLoading(true);
     try {
@@ -77,7 +72,7 @@ export default function BudgetsPage() {
     }
   }, [form.month]);
 
-  async function fetchTransactions() {
+  const fetchTransactions = useCallback(async () => {
     try {
       const res = await fetch("/api/transactions");
       if (!res.ok) {
@@ -88,7 +83,12 @@ export default function BudgetsPage() {
     } catch {
       setTransactions([]);
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    fetchBudgets();
+    fetchTransactions();
+  }, [fetchBudgets, fetchTransactions]);
 
   function validate(form: Partial<Budget>) {
     if (!form.amount || form.amount <= 0) return "Amount must be positive.";

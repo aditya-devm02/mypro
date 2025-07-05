@@ -6,15 +6,20 @@ if (!MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable');
 }
 
-let cached = (global as unknown as { mongoose?: { conn: unknown; promise: unknown } }).mongoose;
+interface Cached {
+  conn: unknown;
+  promise: unknown;
+}
+
+let cached = (global as unknown as { mongoose?: Cached }).mongoose;
 
 if (!cached) {
-  cached = (global as unknown as { mongoose?: { conn: unknown; promise: unknown } }).mongoose = { conn: null, promise: null };
+  cached = (global as unknown as { mongoose?: Cached }).mongoose = { conn: null, promise: null };
 }
 
 export async function connectToDatabase() {
-  if (cached.conn) return cached.conn;
-  if (!cached.promise) {
+  if (cached?.conn) return cached.conn;
+  if (!cached?.promise) {
     const opts = {
       bufferCommands: false,
       maxPoolSize: 10,
@@ -22,7 +27,7 @@ export async function connectToDatabase() {
       socketTimeoutMS: 45000,
     };
     
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+    cached!.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
       console.log('Connected to MongoDB successfully');
       return mongoose;
     }).catch((error) => {
@@ -32,10 +37,10 @@ export async function connectToDatabase() {
   }
   
   try {
-    cached.conn = await cached.promise;
-    return cached.conn;
+    cached!.conn = await cached!.promise;
+    return cached!.conn;
   } catch (error) {
-    cached.promise = null;
+    cached!.promise = null;
     throw error;
   }
 } 
