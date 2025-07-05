@@ -61,7 +61,7 @@ export default function DashboardPage() {
       }
       const data = await res.json();
       setTransactions(Array.isArray(data) ? data : []);
-    } catch (_err) {
+    } catch {
       setError("Failed to load transactions. Please check your MongoDB connection.");
       setTransactions([]);
     } finally {

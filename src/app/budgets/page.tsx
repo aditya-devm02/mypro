@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { categories, Category } from "@/lib/models";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { format } from "date-fns";
@@ -60,7 +60,7 @@ export default function BudgetsPage() {
     fetchTransactions();
   }, []);
 
-  async function fetchBudgets() {
+  const fetchBudgets = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch(`/api/budgets?month=${form.month}`);
@@ -69,13 +69,13 @@ export default function BudgetsPage() {
       }
       const data = await res.json();
       setBudgets(Array.isArray(data) ? data : []);
-    } catch (_err) {
+    } catch {
       setError("Failed to load budgets. Please check your MongoDB connection.");
       setBudgets([]);
     } finally {
       setLoading(false);
     }
-  }
+  }, [form.month]);
 
   async function fetchTransactions() {
     try {
@@ -85,7 +85,7 @@ export default function BudgetsPage() {
       }
       const data = await res.json();
       setTransactions(Array.isArray(data) ? data : []);
-    } catch (_err) {
+    } catch {
       setTransactions([]);
     }
   }
@@ -114,7 +114,7 @@ export default function BudgetsPage() {
       }
       setForm({ category: categories[0], amount: 0, month: form.month });
       fetchBudgets();
-    } catch (_err) {
+    } catch {
       setError("Failed to save budget. Please check your MongoDB connection.");
       setLoading(false);
     }
@@ -132,7 +132,7 @@ export default function BudgetsPage() {
         throw new Error("Failed to delete budget");
       }
       fetchBudgets();
-    } catch (_err) {
+    } catch {
       setError("Failed to delete budget. Please check your MongoDB connection.");
       setLoading(false);
     }

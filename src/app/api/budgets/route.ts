@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     const filter = month ? { month } : {};
     const budgets = await Budget.find(filter);
     return NextResponse.json(budgets);
-  } catch (_error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch budgets' }, { status: 500 });
   }
 }
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
       { upsert: true, new: true }
     );
     return NextResponse.json(budget);
-  } catch (_error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to save budget' }, { status: 500 });
   }
 }
@@ -46,7 +46,7 @@ export async function DELETE(req: NextRequest) {
     const { _id } = await req.json();
     await Budget.findByIdAndDelete(_id);
     return NextResponse.json({ success: true });
-  } catch (_error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to delete budget' }, { status: 500 });
   }
 } 

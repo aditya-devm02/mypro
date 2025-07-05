@@ -64,7 +64,7 @@ export default function TransactionsPage() {
       }
       const data = await res.json();
       setTransactions(Array.isArray(data) ? data : []);
-    } catch (_err) {
+    } catch {
       setError("Failed to load transactions. Please check your MongoDB connection.");
       setTransactions([]);
     } finally {
@@ -99,7 +99,7 @@ export default function TransactionsPage() {
       setForm({ date: "", amount: 0, description: "", category: categories[0] });
       setEditingId(null);
       fetchTransactions();
-    } catch (_err) {
+    } catch {
       setError("Failed to save transaction. Please check your MongoDB connection.");
       setLoading(false);
     }
@@ -122,7 +122,7 @@ export default function TransactionsPage() {
         throw new Error("Failed to delete transaction");
       }
       fetchTransactions();
-    } catch (_err) {
+    } catch {
       setError("Failed to delete transaction. Please check your MongoDB connection.");
       setLoading(false);
     }
