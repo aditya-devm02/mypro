@@ -70,14 +70,7 @@ Built with a focus on user experience, performance, and scalability, this projec
 ---
 
 ## 🏗️ Architecture
-
-```mermaid
-graph TD;
-  A[Next.js App (Frontend & API)] -->|REST API| B(MongoDB Atlas)
-  A --> C[Recharts (Charts)]
-  A --> D[shadcn/ui (UI Components)]
-  A --> E[Render (Deployment)]
-```
+`
 
 - **Next.js App Router** for full-stack React and API routes
 - **MongoDB Atlas** for cloud database
