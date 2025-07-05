@@ -53,13 +53,19 @@ Built with a focus on user experience, performance, and scalability, this projec
 
 ---
 
-## 🖼️ Screenshots
 
-> *(Add your own screenshots here!)*
+---
 
-| Dashboard | Budgets | Transactions |
-|-----------|---------|--------------|
-| ![Dashboard](public/demo-dashboard.png) | ![Budgets](public/demo-budgets.png) | ![Transactions](public/demo-transactions.png) |
+## 🔒 Security & Best Practices
+
+- **Never commit your MongoDB URI, passwords, or any secrets to GitHub.**
+- Always keep your `.env`, `.env.local`, and any secret files out of version control.
+- Your `.gitignore` should include:
+  ```
+  .env
+  .env.local
+  ```
+- If you ever accidentally push secrets, change your MongoDB password immediately and update your environment variables on Render.
 
 ---
 
@@ -153,6 +159,4 @@ graph TD;
 - **Great for portfolios:** Showcases both technical and design skills
 
 ---
-
-## 📄 License
 MIT
